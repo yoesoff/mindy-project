@@ -51,8 +51,8 @@ export default {
 
       try {
         // Add ChatGPT response with timestamp and status
-        const res = await axios.get(`http://localhost:3000/api/chatgpt/response`, {
-          params: { prompt: prompt.value },
+        const res = await axios.post(`http://localhost:3000/api/chatgpt/response`, {
+          prompt: prompt.value,
         });
 
         messages.value.push({

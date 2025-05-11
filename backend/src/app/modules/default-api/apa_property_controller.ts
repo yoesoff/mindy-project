@@ -1,5 +1,5 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { PaginationQueryDto } from '../dto/pagination-query.dto';
+import { PaginationQueryDto } from '../../dto/pagination-query.dto';
 import { ApaPropertyService } from './apa-property.service';
 
 @Controller('properties')

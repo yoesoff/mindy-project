@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ApaPropertyEntity } from '../../entity/apa_property.entity';
-import { PaginationQueryDto } from '../dto/pagination-query.dto';
+import { ApaPropertyEntity } from '../../../entity/apa_property.entity';
+import { PaginationQueryDto } from '../../dto/pagination-query.dto';
 
 @Injectable()
 export class ApaPropertyService {

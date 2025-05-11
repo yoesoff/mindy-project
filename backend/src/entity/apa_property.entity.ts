@@ -6,14 +6,6 @@ import {
 } from 'typeorm';
 
 @Entity('apa_property')
-@Index(['suburb_id'])
-@Index(['stage', 'user_id'])
-@Index(['expiry_property'])
-@Index(['user_id'])
-@Index(['zoooffice_id'])
-@Index(['source_id'])
-@Index(['agent_id'])
-@Index(['user_id', 'agent_id', 'progress', 'category', 'stage', 'suburb_id'])
 export class ApaPropertyEntity {
   @PrimaryGeneratedColumn({ name: 'property_id', unsigned: true })
   propertyId: number;
