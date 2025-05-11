@@ -1,17 +1,19 @@
 <template>
   <div id="app">
     <ApaPropertyModule />
+    <ChatGPTModule />
   </div>
 </template>
 
 <script>
-// import ChatGPTModule from "./components/chatgpt/ChatGPTModule.vue";
+import ChatGPTModule from "./components/chatgpt/ChatGPTModule.vue";
 import ApaPropertyModule from "./components/apaproperty/ApaPropertyModule.vue";
 
 export default {
   name: "App",
   components: {
-    ApaPropertyModule,
+    ChatGPTModule,
+    ApaPropertyModule
   },
 };
 </script>
