@@ -11,13 +11,18 @@ export class ApaPropertyService {
     private propertyRepository: Repository<ApaPropertyEntity>,
   ) {}
 
-  async findAll(paginationQuery: PaginationQueryDto): Promise<ApaPropertyEntity[]> {
-    const { limit, offset } = paginationQuery;
-    return await this.propertyRepository.find({
-      skip: offset,
+  async findAll(paginationQuery: PaginationQueryDto) {
+    const page = Number(paginationQuery.page) || 1;
+    const limit = Number(paginationQuery.limit) || 9;
+
+    const [data, total] = await this.propertyRepository.findAndCount({
+      skip: (page - 1) * limit,
       take: limit,
     });
+
+    return { data, total };
   }
+
 
   async findOne(propertyId: number): Promise<ApaPropertyEntity> {
     const property = await this.propertyRepository.findOne({ where: { propertyId } });
