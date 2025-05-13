@@ -18,6 +18,12 @@
           >
             {{ property.showBody ? 'Hide Details' : 'Show Details' }}
           </button>
+          <button
+            @click="fetchAIInsight(property)"
+            class="ai-insight-button"
+          >
+            AI Insight
+          </button>
           <div v-if="property.showBody" class="property-body" v-html="property.body"></div>
           <a
             :href="property.website"
@@ -30,6 +36,7 @@
         </div>
       </div>
       <p v-else>No properties found.</p>
+
       <div class="pagination">
         <button
           :disabled="currentPage === 1 || loading"
@@ -42,7 +49,7 @@
           :disabled="currentPage === totalPages || loading"
           @click="changePage(Number(currentPage) + 1)"
         >
-          Next {{currentPage}}
+          Next
         </button>
       </div>
     </div>
@@ -60,7 +67,8 @@ export default {
     const loading = ref(true);
     const currentPage = ref(1);
     const totalPages = ref(1);
-    const limit = 9;
+    const chatGptResponse = ref(""); // Store ChatGPT response
+    const limit = 4;
 
     const fetchProperties = async (page = 1) => {
       loading.value = true;
@@ -68,7 +76,6 @@ export default {
         const response = await axios.get(
           `http://localhost:3000/api/properties?page=${page}&limit=${limit}`
         );
-        // Tambahkan field showBody ke setiap property
         properties.value = (response.data.data || []).map((property) => ({
           ...property,
           showBody: false,
@@ -83,11 +90,24 @@ export default {
       }
     };
 
+    const fetchAIInsight = async (property) => {
+      try {
+        const prompt = `Analyze the following property: Title - ${property.title}, Address - ${property.address}, Price Range - ${property.minPrice} to ${property.maxPrice} and create 5 social media tags about it`;
+        const response = await axios.post(`http://localhost:3000/api/chatgpt/response`, {
+          prompt,
+        });
+        alert(`AI Insight for ${property.title}: ${response.data}`);
+      } catch (error) {
+        console.error("Error fetching AI insight:", error);
+        alert("Failed to fetch AI insight.");
+      }
+    };
+
     const changePage = (page) => {
-      const newPage = Math.max(1, Math.min(Number(page), totalPages.value)); // pastikan angka valid
+      const newPage = Math.max(1, Math.min(Number(page), totalPages.value));
       if (newPage !== currentPage.value) {
         currentPage.value = newPage;
-        fetchProperties(newPage); // gunakan newPage langsung
+        fetchProperties(newPage);
       }
     };
 
@@ -97,43 +117,25 @@ export default {
 
     onMounted(() => fetchProperties(currentPage.value));
 
-    return { properties, loading, currentPage, totalPages, changePage, togglePropertyBody };
+    return { properties, loading, currentPage, totalPages, chatGptResponse, changePage, togglePropertyBody, fetchAIInsight };
   },
 };
 </script>
 
 <style scoped>
-.apa-property-module {
-  max-width: 1200px;
-  margin: 2rem auto;
-  font-family: 'Arial', sans-serif;
-  color: #333;
-}
-
-h1 {
-  text-align: center;
-  color: #4caf50;
-}
-
-.loading {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #666;
-}
-
 .property-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
-  margin-top: 1rem;
+  margin: 2rem 0;
 }
 
 .property-card {
-  background: #f9f9f9;
+  background: #ffffff;
   border: 1px solid #ddd;
   border-radius: 10px;
-  padding: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -144,80 +146,160 @@ h1 {
 
 .property-card h2 {
   font-size: 1.5rem;
-  color: #4caf50;
+  color: #333;
   margin-bottom: 0.5rem;
 }
 
 .property-card p {
-  margin: 0.5rem 0;
+  font-size: 1rem;
   color: #555;
+  margin: 0.5rem 0;
 }
 
-.property-body {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #f1f1f1;
+.property-card .toggle-button {
+  background: #4caf50;
+  color: white;
+  border: none;
   border-radius: 5px;
-  max-height: 300px;
-  overflow-y: auto;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
 }
 
-.property-link {
+.property-card .toggle-button:hover {
+  background: #45a049;
+}
+
+.property-card .property-link {
   display: inline-block;
   margin-top: 1rem;
   color: #4caf50;
   text-decoration: none;
   font-weight: bold;
+  transition: color 0.3s ease;
 }
 
-.property-link:hover {
-  text-decoration: underline;
+.property-card .property-link:hover {
+  color: #388e3c;
 }
 
-.toggle-button {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+.property-body {
+  margin-top: 1rem;
   font-size: 0.9rem;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.toggle-button:hover {
-  background: #45a049;
-  transform: scale(1.05);
+  color: #666;
+  line-height: 1.5;
 }
 
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 1rem;
   gap: 1rem;
+  margin-top: 2rem;
 }
 
 .pagination button {
-  padding: 0.5rem 1rem;
   background: #4caf50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .pagination button:disabled {
   background: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.pagination button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .pagination span {
   font-size: 1rem;
   color: #333;
+  font-weight: bold;
+}
+<style scoped>
+ .chatgpt-response-box {
+   background: linear-gradient(135deg, #e0f7fa, #e8f5e9);
+   border: 1px solid #b2dfdb;
+   border-radius: 15px;
+   padding: 1.5rem;
+   margin: 2rem 0;
+   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+   transition: transform 0.3s ease, box-shadow 0.3s ease;
+ }
+
+.chatgpt-response-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.chatgpt-response-box h2 {
+  color: #00796b;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.chatgpt-response-box p {
+  color: #004d40;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  text-align: justify;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+.chatgpt-response-box p::first-letter {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #00796b;
+}
+
+.apa-property-module {
+  padding: 2rem;
+  margin: 1rem auto;
+  max-width: 1200px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.apa-property-module h1 {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+}
+
+.ai-insight-button {
+  margin-left: auto;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  transition: background 0.3s ease;
+}
+
+.ai-insight-button:hover {
+  background: #1976d2;
 }
 </style>
