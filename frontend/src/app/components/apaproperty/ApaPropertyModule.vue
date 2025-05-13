@@ -21,8 +21,10 @@
           <button
             @click="fetchAIInsight(property)"
             class="ai-insight-button"
+            :disabled="property.loadingAI"
           >
-            AI Insight
+            <span v-if="property.loadingAI">Loading...</span>
+            <span v-else>AI Insight</span>
           </button>
           <div v-if="property.showBody" class="property-body" v-html="property.body"></div>
           <a
@@ -91,15 +93,18 @@ export default {
     };
 
     const fetchAIInsight = async (property) => {
+      property.loadingAI = true; // Set loading state
       try {
         const prompt = `Analyze the following property: Title - ${property.title}, Address - ${property.address}, Price Range - ${property.minPrice} to ${property.maxPrice} and create 5 social media tags about it`;
         const response = await axios.post(`http://localhost:3000/api/chatgpt/response`, {
           prompt,
         });
-        alert(`AI Insight for ${property.title}: ${response.data}`);
+        alert(`${response.data}`);
       } catch (error) {
         console.error("Error fetching AI insight:", error);
         alert("Failed to fetch AI insight.");
+      } finally {
+        property.loadingAI = false; // Reset loading state
       }
     };
 
